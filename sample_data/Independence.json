@@ -1,0 +1,177 @@
+{
+  "title": "Independence",
+  "summary": "Independence is the condition of a nation, country, or state in which its residents and population exercise self-government and sovereignty over its territory. It is the opposite of being a dependent territory or colony and is often celebrated with a national holiday. The article explores the definition of independence, its distinction from revolution and autonomy, the right to independence under international law, and provides a historical overview of major periods of decolonization and state formation.",
+  "key_entities": {
+    "countries_and_regions": [
+      "United States",
+      "Indonesia",
+      "Mexico",
+      "Mongolia",
+      "Finland",
+      "India",
+      "Algeria",
+      "Kosovo",
+      "Serbia",
+      "Scotland",
+      "Azawad",
+      "Catalan",
+      "China",
+      "Russia"
+    ],
+    "historical_empires": [
+      "Ottoman",
+      "Austro-Hungarian",
+      "Russian",
+      "German",
+      "European colonial empires",
+      "Nazi German Reich",
+      "Empire of Japan"
+    ],
+    "events": [
+      "Mexican Revolution",
+      "American Revolutionary War",
+      "Spanish American wars of independence",
+      "First World War",
+      "Chinese Revolution (1911)",
+      "Russian Revolution (1917)"
+    ],
+    "documents": [
+      "Declaration on the Granting of Independence to Colonial Countries and Peoples",
+      "Declaration of Arbroath",
+      "U.S. Declaration of Independence"
+    ],
+    "concepts": [
+      "Self-government",
+      "Sovereignty",
+      "Colonialism",
+      "Revolution",
+      "Autonomy",
+      "Devolution",
+      "Protectorate",
+      "Decolonization",
+      "Self-determination",
+      "Secession"
+    ]
+  },
+  "sections": [
+    "Definition",
+    "Distinction between independence and autonomy",
+    "Right to independence",
+    "Declarations of independence",
+    "Historical overview",
+    "Continents",
+    "See also"
+  ],
+  "quiz": [
+    {
+      "question": "According to the article, what is the opposite of independence?",
+      "options": [
+        "The status of a dependent territory or colony",
+        "The status of a protectorate",
+        "The status of an autonomous region",
+        "The status of a sovereign state"
+      ],
+      "answer": "The status of a dependent territory or colony",
+      "difficulty": "easy",
+      "explanation": "The article explicitly states: 'The opposite of independence is the status of a dependent territory or colony.'"
+    },
+    {
+      "question": "What is the key difference between autonomy and independence as described in the text?",
+      "options": [
+        "Autonomy is achieved through violent war, while independence is peaceful.",
+        "There is no difference; the terms are used interchangeably.",
+        "Autonomy is granted by an overseeing authority that retains ultimate control, unlike full independence.",
+        "Independence applies to countries, while autonomy applies only to indigenous peoples."
+      ],
+      "answer": "Autonomy is granted by an overseeing authority that retains ultimate control, unlike full independence.",
+      "difficulty": "medium",
+      "explanation": "The article defines autonomy as 'a kind of independence which has been granted by an overseeing authority that itself still retains ultimate authority over that territory'."
+    },
+    {
+      "question": "Which document is mentioned as the earliest surviving example of a declaration of independence?",
+      "options": [
+        "The U.S. Declaration of Independence (1776)",
+        "Scotland's Declaration of Arbroath (1320)",
+        "The Magna Carta (1215)",
+        "The Declaration on the Granting of Independence to Colonial Countries and Peoples (1960)"
+      ],
+      "answer": "Scotland's Declaration of Arbroath (1320)",
+      "difficulty": "medium",
+      "explanation": "The text identifies 'Scotland's Declaration of Arbroath in 1320' as the earliest surviving example of a declaration of independence."
+    },
+    {
+      "question": "Which of these countries is cited as an example of gaining independence during a revolution occurring in a larger state?",
+      "options": [
+        "Algeria",
+        "India",
+        "United States",
+        "Finland"
+      ],
+      "answer": "Finland",
+      "difficulty": "hard",
+      "explanation": "The article states that 'Finland, for example, gained their independence during the revolutions occurring in China (1911) and Russia (1917) respectively.'"
+    },
+    {
+      "question": "Which historical period is NOT listed as one of the four major periods of declaring independence?",
+      "options": [
+        "The aftermath of the Napoleonic Wars in the early 1800s",
+        "The immediate aftermath of the First World War",
+        "1945 to c. 1979, during the fall of European colonial empires",
+        "The early 1990s, following the breakup of the Soviet Union"
+      ],
+      "answer": "The aftermath of the Napoleonic Wars in the early 1800s",
+      "difficulty": "hard",
+      "explanation": "The article lists four major periods: 1770s-1830s (American/Spanish American wars), post-WWI, 1945-c.1979 (post-WWII decolonization), and the early 1990s (post-Soviet era). The Napoleonic Wars are not specifically mentioned as a distinct period."
+    },
+    {
+      "question": "The right to self-determination, as described in the article, generally allows for what?",
+      "options": [
+        "An unconditional right of secession for any group",
+        "Self-governance, but not necessarily secession",
+        "The immediate dissolution of sovereign states",
+        "The formation of colonies"
+      ],
+      "answer": "Self-governance, but not necessarily secession",
+      "difficulty": "medium",
+      "explanation": "The text clarifies that the right of self-determination allows self-governance but 'is not a right of secession, except in extreme cases of oppression'."
+    }
+  ],
+  "related_topics": [
+    "Sovereignty",
+    "Decolonization",
+    "Self-determination",
+    "Secession",
+    "List of sovereign states by date of formation"
+  ],
+  "flashcards": [
+    {
+      "term": "Independence",
+      "definition": "A condition of a nation, country, or state, in which its population exercises self-government and sovereignty over its territory."
+    },
+    {
+      "term": "Dependent Territory",
+      "definition": "The status opposite to independence, where a territory is governed by another country; also known as a colony."
+    },
+    {
+      "term": "Autonomy",
+      "definition": "A form of independence granted by an overseeing authority that itself still retains ultimate authority over the territory."
+    },
+    {
+      "term": "Protectorate",
+      "definition": "An autonomous region that depends upon a larger government for its protection."
+    },
+    {
+      "term": "Decolonization",
+      "definition": "The historical process by which colonies become independent of the colonizing country."
+    },
+    {
+      "term": "Self-determination",
+      "definition": "The right that allows for self-governance but is not generally a right of secession, except in extreme cases of oppression."
+    },
+    {
+      "term": "Declaration of Independence",
+      "definition": "A document issued by a state wishing to achieve independence from a dominating power."
+    }
+  ],
+  "url": "https://en.wikipedia.org/wiki/Independence"
+}

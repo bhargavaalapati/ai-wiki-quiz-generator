@@ -1,0 +1,142 @@
+{
+  "title": "Alan Turing",
+  "summary": "Alan Mathison Turing was an English mathematician and computer scientist, highly influential in the development of theoretical computer science through his concept of the Turing machine. During World War II, he played a crucial role at Bletchley Park in breaking German ciphers, significantly aiding the Allied war effort. After the war, he was prosecuted for homosexuality and died in 1954, only receiving a posthumous royal pardon in 2013.",
+  "key_entities": {
+    "people": [
+      "Alan Turing",
+      "Christopher Morcom",
+      "Max Newman",
+      "John von Neumann",
+      "Alonzo Church",
+      "Kurt Gödel",
+      "David Hilbert",
+      "Gordon Brown",
+      "Queen Elizabeth II",
+      "Ludwig Wittgenstein",
+      "Albert Einstein",
+      "Dilly Knox"
+    ],
+    "organizations": [
+      "King's College, Cambridge",
+      "Princeton University",
+      "Government Code and Cypher School (GC&CS)",
+      "Bletchley Park",
+      "National Physical Laboratory",
+      "University of Manchester",
+      "Sherborne School",
+      "Bank of England",
+      "Indian Civil Service (ICS)",
+      "London Mathematical Society"
+    ],
+    "locations": [
+      "London",
+      "Cambridge",
+      "Bletchley Park",
+      "Princeton",
+      "Maida Vale",
+      "southern England",
+      "Sherborne",
+      "Hastings",
+      "Guildford",
+      "Warsaw"
+    ]
+  },
+  "sections": [
+    "Early life and education",
+    "Career and research"
+  ],
+  "quiz": [
+    {
+      "question": "At Bletchley Park during World War II, Alan Turing led Hut 8, which was responsible for the cryptanalysis of which German system?",
+      "options": [
+        "The Lorenz cipher",
+        "German naval Enigma",
+        "The Turing machine",
+        "The Colossus computer"
+      ],
+      "answer": "German naval Enigma",
+      "difficulty": "easy",
+      "explanation": "The article states that Turing led Hut 8, 'the section responsible for German naval cryptanalysis' and that he concentrated on 'cryptanalysis of the Enigma cipher machine used by Nazi Germany'."
+    },
+    {
+      "question": "What was the title of Turing's influential 1936 paper that introduced the concept of the Turing machine?",
+      "options": [
+        "Systems of Logic Based on Ordinals",
+        "An Unsolvable Problem of Elementary Number Theory",
+        "On Computable Numbers, with an Application to the Entscheidungsproblem",
+        "On the Gaussian error function"
+      ],
+      "answer": "On Computable Numbers, with an Application to the Entscheidungsproblem",
+      "difficulty": "medium",
+      "explanation": "The text explicitly mentions that in 1936, he finished and delivered his 36-page paper for publication called 'On Computable Numbers, with an Application to the Entscheidungsproblem'."
+    },
+    {
+      "question": "For what reason was Alan Turing prosecuted in 1952?",
+      "options": [
+        "Violating the Official Secrets Act",
+        "Espionage for the Soviet Union",
+        "Homosexual acts",
+        "Scientific misconduct"
+      ],
+      "answer": "Homosexual acts",
+      "difficulty": "easy",
+      "explanation": "The article states, 'In 1952, Turing was prosecuted for homosexual acts. He accepted hormone treatment... as an alternative to prison.'"
+    },
+    {
+      "question": "Who was Christopher Morcom, as described in the article?",
+      "options": [
+        "Turing's professor at Cambridge",
+        "A fellow codebreaker at Bletchley Park",
+        "A fellow pupil at Sherborne described as Turing's first love",
+        "The headmaster who criticized Turing's focus on science"
+      ],
+      "answer": "A fellow pupil at Sherborne described as Turing's first love",
+      "difficulty": "medium",
+      "explanation": "The text describes Christopher Morcom as a 'fellow pupil' at Sherborne and 'Turing's first love', whose early death caused Turing great sorrow."
+    },
+    {
+      "question": "According to the article, what concept did Turing's PhD dissertation, 'Systems of Logic Based on Ordinals,' introduce?",
+      "options": [
+        "The Church-Turing thesis",
+        "The Halting Problem",
+        "Ordinal logic and the notion of relative computing",
+        "The Automatic Computing Engine"
+      ],
+      "answer": "Ordinal logic and the notion of relative computing",
+      "difficulty": "hard",
+      "explanation": "The text states his dissertation, 'Systems of Logic Based on Ordinals, introduced the concept of ordinal logic and the notion of relative computing, in which Turing machines are augmented with so-called oracles'."
+    },
+    {
+      "question": "Which institution did Turing attend after Sherborne School, where he was awarded first-class honours in mathematics?",
+      "options": [
+        "Princeton University",
+        "University of Manchester",
+        "King's College, Cambridge",
+        "National Physical Laboratory"
+      ],
+      "answer": "King's College, Cambridge",
+      "difficulty": "medium",
+      "explanation": "The article says he graduated from King's College, Cambridge, where he studied from February 1931 to November 1934 and was awarded first-class honours in mathematics."
+    },
+    {
+      "question": "What is the 'Alan Turing law' informally known for in the UK?",
+      "options": [
+        "Funding for computer science research",
+        "A 2017 law that retroactively pardoned men convicted under historical anti-homosexuality legislation",
+        "The official secrets act covering wartime intelligence",
+        "An annual award for computing innovation"
+      ],
+      "answer": "A 2017 law that retroactively pardoned men convicted under historical anti-homosexuality legislation",
+      "difficulty": "medium",
+      "explanation": "The article mentions: 'The term \"Alan Turing law\" is used informally to refer to a 2017 law in the UK that retroactively pardoned men cautioned or convicted under historical legislation that outlawed homosexual acts.'"
+    }
+  ],
+  "related_topics": [
+    "Turing machine",
+    "Bletchley Park",
+    "Enigma machine",
+    "History of computer science",
+    "Church–Turing thesis"
+  ],
+  "url": "https://en.wikipedia.org/wiki/Alan_Turing"
+}
