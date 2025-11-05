@@ -146,19 +146,7 @@ The JSON object must strictly adhere to the provided Pydantic schema.
 
 ## 🖼️ Screenshots
 
-_(Add your screenshots to the `screenshots/` folder and link them here)_
-
-| Generate Tab | Quiz Result |
-| :----------: | :---------: |
-|              |             |
-
-| History & Modal | "Take Quiz" Mode |
-| :-------------: | :--------------: |
-|                 |                  |
-
-| Quiz Score | Flashcards |
-| :--------: | :--------: |
-|            |            |
+Check the /screenshots folder for the images of this! after cloning!
 
 ---
 
