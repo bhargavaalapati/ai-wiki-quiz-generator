@@ -14,7 +14,7 @@ app = FastAPI(title="DeepKlarity AI Wiki Quiz Generator")
 
 origins = [
     "http://localhost:5173",
-    "https://ai-quiz-frontend.vercel.app",
+    "https://ai-wiki-quiz-generator-three.vercel.app/",
 ]
 
 # --- CORS Middleware ---
