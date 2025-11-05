@@ -11,12 +11,18 @@ database.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DeepKlarity AI Wiki Quiz Generator")
 
+
+origins = [
+    "http://localhost:5173",
+    "https://ai-quiz-frontend.vercel.app",
+]
+
 # --- CORS Middleware ---
 # This allows our React frontend (running on a different port)
 # to communicate with this backend.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Adjust this to your React app's URL
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
