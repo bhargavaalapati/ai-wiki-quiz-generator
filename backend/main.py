@@ -1,4 +1,3 @@
-import json
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -11,15 +10,12 @@ database.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="DeepKlarity AI Wiki Quiz Generator")
 
-
 origins = [
     "http://localhost:5173",
     "https://ai-wiki-quiz-generator-three.vercel.app",
 ]
 
 # --- CORS Middleware ---
-# This allows our React frontend (running on a different port)
-# to communicate with this backend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -39,62 +35,65 @@ def read_root():
 @app.post("/generate_quiz")
 def generate_quiz(request: GenerateQuizRequest, db: Session = Depends(get_db)):
     try:
-        # --- 1. Cache Check ---
-        cached_result = (
+        print(f"--- Processing URL: {request.url} ---")
+
+        # --- 1. CACHE CHECK (The Money Saver) ---
+        existing_quiz = (
             db.query(QuizHistory).filter(QuizHistory.url == request.url).first()
         )
-        if cached_result:
+
+        if existing_quiz:
             print(
-                f"--- [Cache Hit] Found ID: {cached_result.id}. Returning from DB. ---"
+                f"--- [CACHE HIT] Found quiz ID: {existing_quiz.id}. Returning from DB. ---"
             )
-            return cached_result.get_full_data()
+            # Get stored quiz data
+            cached_data = existing_quiz.get_full_data().copy()
 
-        print("--- [Cache Miss] URL not found in DB. Starting new generation. ---")
+            # Inject missing fields so frontend always gets them
+            cached_data["id"] = existing_quiz.id
+            cached_data["created_at"] = existing_quiz.date_generated.isoformat()
 
-        # --- 2. Scrape Wikipedia ---
-        print(f"Scraping URL: {request.url}")
+            return cached_data
+
+        # --- 2. CACHE MISS → Generate fresh quiz ---
+        print("--- [CACHE MISS] URL not found. Starting fresh generation. ---")
+
+        # Scrape Wikipedia
         title, article_text = scraper.scrape_wikipedia(request.url)
-
         if not article_text:
-            raise HTTPException(
-                status_code=400, detail="Could not scrape any content from the URL."
-            )
+            raise HTTPException(status_code=400, detail="Could not scrape content.")
 
-        print("Generating quiz data via LLM...")
+        # Generate quiz using AI
         quiz_data = llm_quiz_generator.generate_quiz_data(article_text)
-
-        # Add URL to the data before saving
         quiz_data["url"] = request.url
 
-        # --- 4. Save to Database ---
-        print("Saving to database...")
+        # Save to Database
         db_record = QuizHistory(
             url=request.url,
-            title=quiz_data.get(
-                "title", "Unknown Title"
-            ),  # This will now be "TEST: Coffee"
+            title=quiz_data.get("title", "Unknown Title"),
         )
         db_record.set_full_data(quiz_data)
 
         db.add(db_record)
         db.commit()
-        db.refresh(db_record)
+        db.refresh(db_record)  # Generates the ID
 
-        print(f"Successfully processed and saved quiz ID: {db_record.id}")
+        # --- FIX: Inject ID + created_at into response ---
+        response_payload = quiz_data.copy()
+        response_payload["id"] = db_record.id
+        response_payload["created_at"] = db_record.date_generated.isoformat()
 
-        # --- 5. Return Full JSON Data ---
-        return quiz_data
+        return response_payload
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/history", response_model=list[HistoryItem])
 def get_quiz_history(db: Session = Depends(get_db)):
     """
-    Returns a list of all previously generated quizzes
-    (id, url, title, date_generated only).
+    Returns a list of all previously generated quizzes.
     """
     history = db.query(QuizHistory).order_by(QuizHistory.date_generated.desc()).all()
     return history
@@ -110,5 +109,4 @@ def get_quiz_details(quiz_id: int, db: Session = Depends(get_db)):
     if not db_record:
         raise HTTPException(status_code=404, detail="Quiz not found")
 
-    # Deserialize the 'full_quiz_data' string back into a dict
     return db_record.get_full_data()

@@ -1,72 +1,133 @@
-import { useState, useEffect } from 'react';
-import GenerateQuizTab from './tabs/GenerateQuizTab';
-import HistoryTab from './tabs/HistoryTab'
-import { getHistory } from './services/api';;
+import { useState, useCallback, useEffect, useRef } from "react";
+import styled from "@emotion/styled";
+import { generateQuiz, getHistory } from "./services/api";
+import GenerateTab from "./tabs/GenerateQuizTab";
+import HistoryTab from "./tabs/HistoryTab";
+import { Container, StatusAlert } from "./components/StyledUI";
+import { theme } from "./theme";
 
-function App() {
-  const [activeTab, setActiveTab] = useState('generate');
+// ... (Keep Title, TabList, TabButton styles) ...
+const Title = styled.h2`
+  text-align: center;
+  color: ${theme.colors.primary};
+  margin-bottom: 32px;
+  font-size: 2rem;
+`;
 
-  // --- STATE LIFTED UP ---
-  const [history, setHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
+const TabList = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid ${theme.colors.border};
+`;
 
-  const fetchHistory = async () => {
-    setHistoryLoading(true);
-    try {
-      const response = await getHistory();
-      setHistory(response.data);
-    } catch (err) {
-      console.error("Failed to fetch history:", err);
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
+const TabButton = styled.button`
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${(props) => (props.isActive ? theme.colors.primary : theme.colors.textMuted)};
+  border-bottom: ${(props) => (props.isActive ? `3px solid ${theme.colors.primary}` : "3px solid transparent")};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { color: ${theme.colors.primary}; }
+`;
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState("generate");
+  const [isGenerating, setIsGenerating] = useState(false);
   
-  // Fetch history when the App first loads
+  // Data State
+  const [history, setHistory] = useState([]);
+  const [lastGeneratedQuiz, setLastGeneratedQuiz] = useState(null);
+  
+  // --- CACHE LOCK ---
+  // This Ref ensures we strictly fetch only once, ignoring React StrictMode double-mount
+  const dataFetchedRef = useRef(false);
+
+  // 1. Fetch History ONCE on mount
   useEffect(() => {
-    fetchHistory();
+    if (dataFetchedRef.current) return; // Stop if already fetched
+    dataFetchedRef.current = true;      // Mark as fetched
+
+    const initHistory = async () => {
+      try {
+        const res = await getHistory();
+        setHistory(res.data);
+      } catch (e) {
+        console.error("Failed to load history",e);
+      }
+    };
+    initHistory();
+  }, []);
+
+  // 2. Generator Function (Optimistic Update)
+  const startGeneration = useCallback(async (url) => {
+    setIsGenerating(true);
+    setLastGeneratedQuiz(null); // Reset current view
+    
+    try {
+      const res = await generateQuiz(url);
+      
+      if (res.status === 200) {
+        const newQuiz = res.data;
+        setLastGeneratedQuiz(newQuiz);
+
+        // --- THE OPTIMIZATION: Manual History Update ---
+        // Instead of calling GET /history again, we construct the item manually
+        // and add it to the TOP of our list.
+        const newHistoryItem = {
+          id: newQuiz.id, // Comes from our Backend Fix
+          title: newQuiz.title,
+          url: url,
+          date_generated: new Date().toISOString()
+        };
+
+        setHistory(prevHistory => [newHistoryItem, ...prevHistory]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Generation failed.");
+    } finally {
+      setIsGenerating(false);
+    }
   }, []);
 
   return (
-    <div className="min-vh-100 bg-light">
-      <header className="bg-primary text-white p-4 shadow-sm">
-        <h1 className="h3">AI Wiki Quiz Generator</h1>
-      </header>
+    <Container>
+      <Title>🧠 Wiki Quiz Generator</Title>
 
-      <div className="container-fluid mt-4">
-        <ul className="nav nav-tabs">
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === 'generate' ? 'active' : ''}`}
-              onClick={() => setActiveTab('generate')}
-            >
-              Generate Quiz
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveTab('history')}
-            >
-              Past Quizzes (History)
-            </button>
-          </li>
-        </ul>
+      {isGenerating && (
+        <StatusAlert variant="info">
+          ⏳ Quiz generation is running in the background. You can browse history while you wait!
+        </StatusAlert>
+      )}
 
-        <main className="p-4 bg-white border border-top-0 rounded-bottom">
-          <div className={activeTab === 'generate' ? 'd-block' : 'd-none'}>
-            <GenerateQuizTab onQuizGenerated={fetchHistory} />
-          </div>
-          <div className={activeTab === 'history' ? 'd-block' : 'd-none'}>
-            <HistoryTab 
-              history={history} 
-              loading={historyLoading} 
-            />
-          </div>
-        </main>
-      </div>
-    </div>
+      <TabList>
+        <TabButton isActive={activeTab === "generate"} onClick={() => setActiveTab("generate")}>
+          Generate Quiz
+        </TabButton>
+        <TabButton isActive={activeTab === "history"} onClick={() => setActiveTab("history")}>
+          History
+        </TabButton>
+      </TabList>
+
+      {activeTab === "generate" && (
+        <GenerateTab 
+          onStart={startGeneration} 
+          isGenerating={isGenerating} 
+          lastGeneratedQuiz={lastGeneratedQuiz} 
+        />
+      )}
+      
+      {activeTab === "history" && (
+        // Pass history down. No fetching inside HistoryTab!
+        <HistoryTab history={history} />
+      )}
+    </Container>
   );
-}
+};
 
 export default App;

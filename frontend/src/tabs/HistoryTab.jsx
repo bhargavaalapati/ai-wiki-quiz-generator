@@ -1,93 +1,52 @@
-import React, { useState } from 'react';
-import { getQuizDetails } from '../services/api'; 
-import Modal from '../components/Modal';
-import QuizDisplay from '../components/QuizDisplay';
+import { useState } from "react";
+import { getQuizDetails } from "../services/api";
+import { Card, Button, EmptyStateContainer } from "../components/StyledUI";
+import Modal from "../components/Modal";
+import QuizDisplay from "../components/QuizDisplay";
+import { theme } from "../theme";
 
-
-const HistoryTab = ({ history, loading }) => {
-
-  // --- Modal states are still local to this component ---
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalLoading, setModalLoading] = useState(false);
+const HistoryTab = ({ history }) => {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const [modalError, setModalError] = useState(null);
 
-
-  const handleDetailsClick = async (quizId) => {
-    setModalOpen(true);
-    setModalLoading(true);
-    setModalError(null);
-    setSelectedQuiz(null);
+  const handleViewDetails = async (id) => {
     try {
-      const response = await getQuizDetails(quizId);
-      setSelectedQuiz(response.data);
-    } catch { // --- FIX: Added err object ---
-      setModalError('Failed to fetch quiz details.'); 
-      setModalOpen(false);
-    } finally {
-      setModalLoading(false);
+      const res = await getQuizDetails(id);
+      setSelectedQuiz(res.data);
+    } catch (err) {
+      alert("Could not load details.",err);
     }
   };
 
-  if (loading) return <p>Loading history...</p>;
+  if (!history || history.length === 0) {
+    return (
+      <EmptyStateContainer>
+        <h3>📭 History is Empty</h3>
+        <p>No quizzes found yet.</p>
+      </EmptyStateContainer>
+    );
+  }
 
   return (
-    <>
-      <h2 className="h4 mb-4">Quiz Generation History</h2>
-
-      {modalError && <p className="text-danger">{modalError}</p>}
-      <div className="table-responsive">
-        <table className="table table-striped table-hover align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Article Title</th>
-              <th>URL</th>
-              <th>Date</th>
-              <th className="text-end">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            
-            {history.map((item) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td className="fw-medium">{item.title}</td>
-                <td className="text-truncate" style={{ maxWidth: '300px' }}>
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
-                    {item.url}
-                  </a>
-                </td>
-                <td>{new Date(item.date_generated).toLocaleString()}</td>
-                <td className="text-end">
-                  <button
-                    onClick={() => handleDetailsClick(item.id)}
-                    className="btn btn-outline-primary btn-sm"
-                  >
-                    Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Modal 
-        show={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        title={selectedQuiz?.title || 'Loading Quiz...'}
-      >
-        {modalLoading && (
-          <div className="text-center p-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
+    <div>
+      {history.map((item) => (
+        <Card key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ overflow: 'hidden', marginRight: '1rem' }}>
+            <h4 style={{ margin: '0 0 4px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {item.title}
+            </h4>
+            <small style={{ color: theme.colors.textMuted }}>{item.url}</small>
           </div>
-        )}
+          
+          <Button variant="outline" onClick={() => handleViewDetails(item.id)}>
+            Details
+          </Button>
+        </Card>
+      ))}
+
+      <Modal show={!!selectedQuiz} onClose={() => setSelectedQuiz(null)} title={selectedQuiz?.title}>
         {selectedQuiz && <QuizDisplay data={selectedQuiz} />}
       </Modal>
-    </>
+    </div>
   );
 };
 

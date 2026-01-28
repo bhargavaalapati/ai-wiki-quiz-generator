@@ -1,16 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict
 from datetime import datetime
 
 # --- Pydantic Schemas for LLM Output ---
-# This defines the strict JSON structure we want the LLM to return.
-
-
-class Flashcard(BaseModel):
-    term: str = Field(description="The key concept, person, or term")
-    definition: str = Field(
-        description="A concise, one-sentence definition based on the article text"
-    )
 
 
 class QuizQuestion(BaseModel):
@@ -38,9 +30,6 @@ class QuizOutput(BaseModel):
     related_topics: List[str] = Field(
         description="A list of 3-5 suggested related Wikipedia topics for further reading"
     )
-    flashcards: List[Flashcard] = Field(
-        description="A list of 5-10 key concept flashcards from the article"
-    )
 
 
 # --- Pydantic Schemas for API Endpoints ---
@@ -50,7 +39,6 @@ class GenerateQuizRequest(BaseModel):
     url: str
 
 
-# For the /history endpoint response
 class HistoryItem(BaseModel):
     id: int
     url: str

@@ -1,4 +1,3 @@
-# backend/database.py
 import json
 import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
@@ -17,7 +16,6 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -32,7 +30,6 @@ class QuizHistory(Base):
     date_generated = Column(DateTime, default=datetime.utcnow)
 
     # Store the complex JSON output as a serialized string
-    # This is crucial for storing nested LLM output
     full_quiz_data = Column(Text)
 
     def set_full_data(self, data: dict):
@@ -40,10 +37,6 @@ class QuizHistory(Base):
 
     def get_full_data(self) -> dict:
         return json.loads(self.full_quiz_data) if self.full_quiz_data else {}
-
-
-# Create the database tables
-Base.metadata.create_all(bind=engine)
 
 
 # Dependency for FastAPI

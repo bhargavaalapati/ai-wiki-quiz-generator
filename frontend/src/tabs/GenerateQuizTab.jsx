@@ -1,124 +1,138 @@
-import React, { useState } from 'react';
-import { generateQuiz } from '../services/api';
-import QuizDisplay from '../components/QuizDisplay';
+import React, { useState } from "react";
+import styled from "@emotion/styled";
+import { theme } from "../theme";
+import { Card, Button, Input, StatusAlert } from "../components/StyledUI";
+import { isValidWikiUrl } from "../utils/validation";
+import QuizDisplay from "../components/QuizDisplay";
+import ActiveQuiz from "../components/ActiveQuiz";
 
-// --- FIX: Accept onQuizGenerated prop ---
-const GenerateQuizTab = ({ onQuizGenerated }) => {
-  const [url, setUrl] = useState('https://en.wikipedia.org/wiki/Independence');
-  const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState(null);
-  const [quizData, setQuizData] = useState(null);
+const HelperText = styled.p`
+  font-size: 0.85rem;
+  color: ${(props) =>
+    props.isError ? theme.colors.danger : theme.colors.textMuted};
+  margin-top: -8px;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+`;
 
-  // --- BONUS: Input Validation State ---
-  const [inputError, setInputError] = useState(null);
-  const wikiRegex = /^https:\/\/en\.wikipedia\.org\/wiki\/.+/;
-  // ------------------------------------
+const Spinner = styled.div`
+  border: 3px solid ${theme.colors.background};
+  border-top: 3px solid ${theme.colors.primary};
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setApiError(null);
-    setInputError(null);
-
-    // --- BONUS: Input Validation Check ---
-    if (!wikiRegex.test(url)) {
-      setInputError('Invalid URL. Must be a full "https://en.wikipedia.org/wiki/..." article link.');
-      return;
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
     }
-    // ------------------------------------
-
-    if (!url) {
-      setApiError('Please enter a Wikipedia URL'); // Kept this just in case
-      return;
+    100% {
+      transform: rotate(360deg);
     }
-    
-    setLoading(true);
-    setQuizData(null);
+  }
+`;
 
-    try {
-      const response = await generateQuiz(url);
-      setQuizData(response.data);
-      
-      // --- FIX: Call prop to notify parent of new quiz ---
-      if (onQuizGenerated) {
-        onQuizGenerated();
-      }
-      // ---------------------------------------------------
-
-    } catch (err) {
-      setApiError(err.response?.data?.detail || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
+const GenerateQuizTab = ({ onStart, isGenerating, lastGeneratedQuiz }) => {
+  const [url, setUrl] = useState("");
+  const [inputError, setInputError] = useState("");
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleUrlChange = (e) => {
-    setUrl(e.target.value);
-    // Clear errors on new input
-    if (inputError) setInputError(null);
-    if (apiError) setApiError(null);
+    const val = e.target.value;
+    setUrl(val);
+    if (inputError) setInputError("");
+  };
+
+  const handleGenerateClick = () => {
+    if (!url) {
+      setInputError("URL is required.");
+      return;
+    }
+
+    if (!isValidWikiUrl(url)) {
+      setInputError(
+        "Please enter a valid Wikipedia article URL (e.g., https://en.wikipedia.org/wiki/AI)."
+      );
+      return;
+    }
+
+    onStart(url);
+    setUrl("");
   };
 
   return (
-    <div className="p-4 shadow-sm border rounded">
-      {/* --- Input Form --- */}
-      <form onSubmit={handleSubmit} className="mb-4">
-        <label htmlFor="url-input" className="form-label">
-          Enter Wikipedia Article URL
-        </label>
-        <div className="input-group">
-          <input
-            type="url"
-            id="url-input"
-            value={url}
-            onChange={handleUrlChange} // Use new handler
-            placeholder="https://en.wikipedia.org/wiki/..."
-            // --- BONUS: Show invalid state ---
-            className={`form-control form-control-lg ${inputError ? 'is-invalid' : ''}`}
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary btn-lg"
-          >
-            {loading ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Generating...
-              </>
-            ) : 'Generate Quiz'}
-          </button>
-        </div>
-        
-        {/* --- BONUS: Show input error message --- */}
-        {inputError && (
-          <div className="invalid-feedback d-block">
-            {inputError}
-          </div>
+    <>
+      <Card>
+        <h4 style={{ marginBottom: "16px" }}>🔗 Generate New Quiz</h4>
+
+        <Input
+          value={url}
+          onChange={handleUrlChange}
+          placeholder="Paste Wikipedia URL here..."
+          disabled={isGenerating}
+          style={{
+            borderColor: inputError ? theme.colors.danger : theme.colors.border,
+          }}
+        />
+
+        {inputError && <HelperText isError>{inputError}</HelperText>}
+        {!inputError && (
+          <HelperText>Strictly supports Wikipedia article links.</HelperText>
         )}
-        {/* ------------------------------------- */}
-      
-      </form>
 
-      {/* --- State Display --- */}
-      {loading && (
-        <div className="text-center p-5">
-          <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          <p className="mt-3 text-muted">Generating quiz, this may take a moment...</p>
+        <Button
+          fullWidth
+          onClick={handleGenerateClick}
+          disabled={isGenerating}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          {isGenerating ? (
+            <>
+              <Spinner /> Generating Quiz...
+            </>
+          ) : (
+            "Start Quiz Generation"
+          )}
+        </Button>
+      </Card>
+
+      {/* Show the last quiz generated in this session if it exists */}
+      {lastGeneratedQuiz && (
+        <div style={{ marginTop: "32px" }}>
+          <StatusAlert variant="info">
+            ✨ New Quiz Generated Successfully!
+          </StatusAlert>
+
+          {/* TOGGLE: Show Active Quiz OR Static Display */}
+          {isPlaying ? (
+            <ActiveQuiz
+              quizData={lastGeneratedQuiz}
+              onExit={() => setIsPlaying(false)}
+            />
+          ) : (
+            <>
+              <Button
+                fullWidth
+                onClick={() => setIsPlaying(true)}
+                style={{
+                  marginBottom: "20px",
+                  background: theme.colors.success,
+                }}
+              >
+                ▶️ Play Interactive Quiz
+              </Button>
+              <QuizDisplay data={lastGeneratedQuiz} />
+            </>
+          )}
         </div>
       )}
-
-      {apiError && (
-        <div className="alert alert-danger" role="alert">
-          <strong>Error: </strong> {apiError}
-        </div>
-      )}
-
-      {/* --- Results Display --- */}
-      {quizData && <QuizDisplay data={quizData} />}
-    </div>
+    </>
   );
 };
 
