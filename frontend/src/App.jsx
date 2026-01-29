@@ -1,12 +1,13 @@
+// src/App.jsx
 import { useState, useCallback, useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import { generateQuiz, getHistory } from "./services/api";
 import GenerateTab from "./tabs/GenerateQuizTab";
 import HistoryTab from "./tabs/HistoryTab";
+import RateLimitCard from "./components/RateLimitCard";   // NEW
 import { Container, StatusAlert } from "./components/StyledUI";
 import { theme } from "./theme";
 
-// ... (Keep Title, TabList, TabButton styles) ...
 const Title = styled.h2`
   text-align: center;
   color: ${theme.colors.primary};
@@ -27,69 +28,81 @@ const TabButton = styled.button`
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 600;
-  color: ${(props) => (props.isActive ? theme.colors.primary : theme.colors.textMuted)};
-  border-bottom: ${(props) => (props.isActive ? `3px solid ${theme.colors.primary}` : "3px solid transparent")};
+  color: ${(props) =>
+    props.isActive ? theme.colors.primary : theme.colors.textMuted};
+  border-bottom: ${(props) =>
+    props.isActive
+      ? `3px solid ${theme.colors.primary}`
+      : "3px solid transparent"};
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { color: ${theme.colors.primary}; }
+  &:hover {
+    color: ${theme.colors.primary};
+  }
 `;
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("generate");
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
   // Data State
   const [history, setHistory] = useState([]);
   const [lastGeneratedQuiz, setLastGeneratedQuiz] = useState(null);
-  
+
+  // Rate limit error state (NEW)
+  const [rateLimitError, setRateLimitError] = useState(null);
+
   // --- CACHE LOCK ---
-  // This Ref ensures we strictly fetch only once, ignoring React StrictMode double-mount
   const dataFetchedRef = useRef(false);
 
   // 1. Fetch History ONCE on mount
   useEffect(() => {
-    if (dataFetchedRef.current) return; // Stop if already fetched
-    dataFetchedRef.current = true;      // Mark as fetched
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
     const initHistory = async () => {
       try {
         const res = await getHistory();
         setHistory(res.data);
       } catch (e) {
-        console.error("Failed to load history",e);
+        console.error("Failed to load history", e);
       }
     };
     initHistory();
   }, []);
 
-  // 2. Generator Function (Optimistic Update)
+  // 2. Generator Function (with 429 handling)
   const startGeneration = useCallback(async (url) => {
     setIsGenerating(true);
-    setLastGeneratedQuiz(null); // Reset current view
-    
+    setLastGeneratedQuiz(null);
+    setRateLimitError(null); // reset rate-limit error before request
+
     try {
       const res = await generateQuiz(url);
-      
+
       if (res.status === 200) {
         const newQuiz = res.data;
         setLastGeneratedQuiz(newQuiz);
 
-        // --- THE OPTIMIZATION: Manual History Update ---
-        // Instead of calling GET /history again, we construct the item manually
-        // and add it to the TOP of our list.
+        // Optimistic History Update
         const newHistoryItem = {
-          id: newQuiz.id, // Comes from our Backend Fix
+          id: newQuiz.id,
           title: newQuiz.title,
           url: url,
-          date_generated: new Date().toISOString()
+          date_generated: new Date().toISOString(),
         };
 
-        setHistory(prevHistory => [newHistoryItem, ...prevHistory]);
+        setHistory((prevHistory) => [newHistoryItem, ...prevHistory]);
       }
     } catch (err) {
-      console.error(err);
-      alert("Generation failed.");
+      // --- CATCH 429 ERROR ---
+      if (err.response && err.response.status === 429) {
+        setRateLimitError(err.response.data.detail);
+      } else {
+        console.error("Generation failed:", err);
+        alert("Generation failed.");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -99,32 +112,48 @@ const App = () => {
     <Container>
       <Title>🧠 Wiki Quiz Generator</Title>
 
-      {isGenerating && (
-        <StatusAlert variant="info">
-          ⏳ Quiz generation is running in the background. You can browse history while you wait!
-        </StatusAlert>
-      )}
-
-      <TabList>
-        <TabButton isActive={activeTab === "generate"} onClick={() => setActiveTab("generate")}>
-          Generate Quiz
-        </TabButton>
-        <TabButton isActive={activeTab === "history"} onClick={() => setActiveTab("history")}>
-          History
-        </TabButton>
-      </TabList>
-
-      {activeTab === "generate" && (
-        <GenerateTab 
-          onStart={startGeneration} 
-          isGenerating={isGenerating} 
-          lastGeneratedQuiz={lastGeneratedQuiz} 
+      {/* --- SHOW RATE LIMIT CARD IF BLOCKED --- */}
+      {rateLimitError ? (
+        <RateLimitCard
+          message={rateLimitError}
+          onRetry={() => setRateLimitError(null)}
         />
-      )}
-      
-      {activeTab === "history" && (
-        // Pass history down. No fetching inside HistoryTab!
-        <HistoryTab history={history} />
+      ) : (
+        <>
+          {isGenerating && (
+            <StatusAlert variant="info">
+              ⏳ Quiz generation is running in the background. You can browse
+              history while you wait!
+            </StatusAlert>
+          )}
+
+          <TabList>
+            <TabButton
+              isActive={activeTab === "generate"}
+              onClick={() => setActiveTab("generate")}
+            >
+              Generate Quiz
+            </TabButton>
+            <TabButton
+              isActive={activeTab === "history"}
+              onClick={() => setActiveTab("history")}
+            >
+              History
+            </TabButton>
+          </TabList>
+
+          {activeTab === "generate" && (
+            <GenerateTab
+              onStart={startGeneration}
+              isGenerating={isGenerating}
+              lastGeneratedQuiz={lastGeneratedQuiz}
+            />
+          )}
+
+          {activeTab === "history" && (
+            <HistoryTab history={history} />
+          )}
+        </>
       )}
     </Container>
   );

@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 import database, models, scraper, llm_quiz_generator
 from database import engine, get_db, QuizHistory
 from models import GenerateQuizRequest, HistoryItem
+from fastapi import Request, HTTPException, status
+from datetime import datetime, timedelta
+from models import UserUsage
 
 # Create DB tables
 database.Base.metadata.create_all(bind=engine)
@@ -24,6 +27,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- RATE LIMITER LOGIC ---
+MAX_REQUESTS_PER_HOUR = 2
+
+
+def check_rate_limit(request: Request, db: Session = Depends(get_db)):
+    # 1. Get User IP
+    client_ip = request.client.host
+
+    # 2. Check Database
+    usage = db.query(UserUsage).filter(UserUsage.ip_address == client_ip).first()
+
+    now = datetime.utcnow()
+
+    # 3. Logic
+    if not usage:
+        # First time user
+        new_usage = UserUsage(ip_address=client_ip, count=1, window_start=now)
+        db.add(new_usage)
+        db.commit()
+        return
+
+    # Check if hour has passed
+    if now - usage.window_start > timedelta(hours=1):
+        # Reset window
+        usage.count = 1
+        usage.window_start = now
+        db.commit()
+        return
+
+    # Check limit
+    if usage.count >= MAX_REQUESTS_PER_HOUR:
+        # Calculate time remaining
+        reset_time = usage.window_start + timedelta(hours=1)
+        minutes_left = int((reset_time - now).total_seconds() / 60)
+
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded. You have used your {MAX_REQUESTS_PER_HOUR} free quizzes. Try again in {minutes_left} minutes.",
+        )
+
+    # Increment count
+    usage.count += 1
+    db.commit()
+
+
 # --- API Endpoints ---
 
 
@@ -32,7 +80,7 @@ def read_root():
     return {"message": "Welcome to the AI Wiki Quiz Generator API"}
 
 
-@app.post("/generate_quiz")
+@app.post("/generate_quiz", dependencies=[Depends(check_rate_limit)])
 def generate_quiz(request: GenerateQuizRequest, db: Session = Depends(get_db)):
     try:
         print(f"--- Processing URL: {request.url} ---")

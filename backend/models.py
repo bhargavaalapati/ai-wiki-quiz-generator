@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict
 from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime
+from database import Base
 
 # --- Pydantic Schemas for LLM Output ---
 
@@ -47,3 +49,11 @@ class HistoryItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UserUsage(Base):
+    __tablename__ = "user_usage"
+
+    ip_address = Column(String, primary_key=True, index=True)
+    count = Column(Integer, default=0)
+    window_start = Column(DateTime, default=datetime.utcnow)
