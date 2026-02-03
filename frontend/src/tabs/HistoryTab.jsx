@@ -7,13 +7,23 @@ import { theme } from "../theme";
 
 const HistoryTab = ({ history }) => {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  
+  // 1. New State: Track which specific ID is loading
+  const [loadingId, setLoadingId] = useState(null);
 
   const handleViewDetails = async (id) => {
+    // 2. Set loading state immediately
+    setLoadingId(id);
+    
     try {
       const res = await getQuizDetails(id);
       setSelectedQuiz(res.data);
     } catch (err) {
-      alert("Could not load details.",err);
+      console.error(err);
+      alert("Could not load details.");
+    } finally {
+      // 3. Always clear loading state (even if error)
+      setLoadingId(null);
     }
   };
 
@@ -37,8 +47,13 @@ const HistoryTab = ({ history }) => {
             <small style={{ color: theme.colors.textMuted }}>{item.url}</small>
           </div>
           
-          <Button variant="outline" onClick={() => handleViewDetails(item.id)}>
-            Details
+          <Button 
+            variant="outline" 
+            onClick={() => handleViewDetails(item.id)}
+            disabled={loadingId === item.id} // 4. Disable while loading
+            style={{ minWidth: '80px' }} // Prevent button width jump
+          >
+            {loadingId === item.id ? "Loading..." : "Details"}
           </Button>
         </Card>
       ))}

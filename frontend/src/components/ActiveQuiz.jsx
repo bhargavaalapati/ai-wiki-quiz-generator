@@ -3,9 +3,34 @@ import styled from '@emotion/styled';
 import { Card, Button } from './StyledUI';
 import { theme } from '../theme';
 
+const CloseButton = styled.button`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;      /* ↓ smaller */
+  font-weight: bold;
+  color: ${theme.colors.textMuted};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px 4px;    /* ↓ smaller hitbox */
+  line-height: 1;
+  border-radius: 4px;
+  z-index: 10;
+
+  &:hover {
+    color: ${theme.colors.danger};
+    background: rgba(220, 38, 38, 0.1);
+    transform: scale(1.05); /* ↓ subtler hover */
+  }
+`;
+
+
 const QuestionText = styled.h3`
   color: ${theme.colors.primary};
   margin-bottom: 24px;
+  padding-right: 20px; /* Prevent text from overlapping the X button */
 `;
 
 const OptionButton = styled.button`
@@ -23,7 +48,7 @@ const OptionButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    shadow: ${theme.shadows.card};
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -43,6 +68,11 @@ const ActiveQuiz = ({ quizData, onExit }) => {
   // State for the current question interaction
   const [selectedOption, setSelectedOption] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
+
+  // Safety check
+  if (!quizData || !quizData.quiz || quizData.quiz.length === 0) {
+      return <Card>Error loading quiz data.</Card>;
+  }
 
   const currentQuestion = quizData.quiz[currentIndex];
 
@@ -83,12 +113,14 @@ const ActiveQuiz = ({ quizData, onExit }) => {
 
   if (showScore) {
     return (
-      <Card>
+      <Card style={{ position: 'relative' }}>
+        <CloseButton onClick={onExit} title="Exit Quiz">✕</CloseButton>
+        
         <ScoreBoard>
           <p>Quiz Completed!</p>
           <h2>{score} / {quizData.quiz.length}</h2>
           <p style={{ marginTop: '20px' }}>
-            {(score / quizData.quiz.length) * 100}% Accuracy
+            {Math.round((score / quizData.quiz.length) * 100)}% Accuracy
           </p>
           <Button fullWidth onClick={onExit} style={{ marginTop: '20px' }}>
             Review Answers & Exit
@@ -99,8 +131,12 @@ const ActiveQuiz = ({ quizData, onExit }) => {
   }
 
   return (
-    <Card>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+    <Card style={{ position: 'relative' }}> {/* Added relative positioning for parent */}
+      
+      {/* --- 3. ADDED BUTTON HERE (Game View) --- */}
+      <CloseButton onClick={onExit} title="Exit Quiz">✕</CloseButton>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', marginTop: '10px' }}>
         <span style={{ fontWeight: 'bold', color: theme.colors.textMuted }}>
           Question {currentIndex + 1} of {quizData.quiz.length}
         </span>

@@ -10,6 +10,7 @@ export const Container = styled.div`
 `;
 
 export const Card = styled.div`
+  position: relative;
   background: ${theme.colors.surface};
   border-radius: ${theme.radius};
   border: 1px solid ${theme.colors.border};
