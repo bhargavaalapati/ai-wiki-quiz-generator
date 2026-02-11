@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database import Base, QuizHistory
 from models import UserUsage
+from unittest.mock import patch
 
 # 1. Setup a Temporary Test Database (SQLite in memory)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -88,3 +89,36 @@ def test_rate_limiting():
         print(f"❌ FAILED: Expected 429, got {response3.status_code}")
         # This assert will fail the test if the status isn't 429
         assert response3.status_code == 429
+
+
+def test_generate_quiz_success():
+    """
+    Test a successful quiz generation by MOCKING the AI response.
+    This verifies the DB save and Response format without calling Gemini.
+    """
+    # 1. Fake Data to return instead of calling Google
+    mock_ai_response = {
+        "title": "Mock Quiz",
+        "summary": "This is a fake summary.",
+        "key_entities": {"people": ["Tester"]},
+        "sections": ["Intro"],
+        "quiz": [],
+        "related_topics": [],
+    }
+
+    # 2. Patch 'scrape_wikipedia' to return dummy text
+    with patch("scraper.scrape_wikipedia") as mock_scrape:
+        mock_scrape.return_value = ("Mock Title", "Mock Article Text")
+
+        # 3. Patch 'generate_quiz_data' to return our Fake JSON
+        with patch("llm_quiz_generator.generate_quiz_data") as mock_llm:
+            mock_llm.return_value = mock_ai_response
+
+            # 4. Make the Request
+            payload = {"url": "https://en.wikipedia.org/wiki/Mock_Test"}
+            response = client.post("/generate_quiz", json=payload)
+
+            # 5. Verify it worked
+            assert response.status_code == 200
+            assert response.json()["title"] == "Mock Quiz"
+            assert "id" in response.json()  # Did it generate an ID?

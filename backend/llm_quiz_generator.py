@@ -20,35 +20,24 @@ def generate_quiz_data(article_text: str) -> dict:
     # 1. Initialize the Pydantic parser
     parser = JsonOutputParser(pydantic_object=QuizOutput)
 
-    # 2. Define the Prompt Template
+    # 2. Define the Prompt Template (Optimized for Tokens)
     prompt_template = """
-    # --- CACHE-BUSTING FIX ---
-    # This is a unique number to force a new response: {random_number}
-    # --------------------------
-    You are an expert quizmaster and content analyst.
-    Your task is to generate a comprehensive JSON object based on the provided Wikipedia article text.
-    The JSON object must strictly adhere to the provided Pydantic schema.
-
-    **Article Text:**
+    Role: Expert Quizmaster.
+    Task: Convert the provided text into a JSON object matching the strict schema.
+    
+    Context:
     ---
     {article_text}
     ---
 
-    **Instructions:**
-    1. **Analyze the Text:** Read the provided article text carefully.
-    2. **Generate Data:** Extract the title, write a concise summary, and identify key entities.
-    3. **Quiz Questions:** Generate 5-10 multiple-choice questions based on the content.
-       - Include 4 options for each question.
-       - Clearly mark the correct answer.
-       - Provide a short explanation for the answer.
-       - Assign a difficulty level (easy, medium, hard).
-    4. **Key Entities:** Categorize important people, organizations, and locations mentioned.
-    5. **Related Topics:** Suggest 3-5 related Wikipedia topics for further reading.
+    Requirements:
+    1. Title & Summary: Extract from text.
+    2. Key Entities: List people, orgs, locations.
+    3. Quiz: 5-10 MCQs. 4 options each. 1 correct answer. Concise explanation. Mixed difficulty.
+    4. Related Topics: 3-5 links.
 
-    **Output Format Instructions:**
+    Schema Instructions:
     {format_instructions}
-
-    **Final JSON Output:**
     """
 
     # 3. Initialize the Gemini Model
@@ -56,14 +45,11 @@ def generate_quiz_data(article_text: str) -> dict:
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in .env file or environment")
 
-    # --- FIX 1: Use Stable Model ---
-    # 'gemini-flash-latest' points to 1.5 Flash, which has much higher rate limits
-    # than the experimental 2.0 models.
     llm = ChatGoogleGenerativeAI(
         model="gemini-flash-latest",
         temperature=0.7,
         google_api_key=api_key,
-        max_retries=3,  # --- FIX 2: Auto-Retry on 429 Errors ---
+        max_retries=2,
     )
 
     # 4. Create the LangChain Chain
@@ -76,29 +62,29 @@ def generate_quiz_data(article_text: str) -> dict:
 
     print("--- [LLM] Generating quiz data... ---")
 
-    # 5. Invoke the Chain with a Manual Retry Loop (Extra Safety)
+    # 5. Invoke the Chain with a Manual Retry Loop
     max_attempts = 3
     for attempt in range(max_attempts):
         try:
+            # We don't inject random_number into the prompt text to save tokens,
+            # but we can pass it if we want to ensure variety in the call signature.
+            # For pure token savings, simpler is better.
             response_data = chain.invoke(
                 {
                     "article_text": article_text,
-                    "random_number": random.randint(10000, 99999),
                 }
             )
             print("--- [LLM] Generation successful. ---")
             return response_data
 
         except Exception as e:
-            # Check if it's a Rate Limit error (429)
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                wait_time = (attempt + 1) * 5  # Wait 5s, then 10s...
+                wait_time = (attempt + 1) * 5
                 print(
                     f"--- [LLM] Rate Limit Hit. Retrying in {wait_time}s... (Attempt {attempt+1}/{max_attempts}) ---"
                 )
                 time.sleep(wait_time)
             else:
-                # If it's another error (like logic), fail immediately
                 print(f"--- [LLM] Error during generation: {e} ---")
                 raise
 

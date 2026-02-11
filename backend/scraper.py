@@ -25,37 +25,49 @@ def scrape_wikipedia(url: str) -> (str, str):
         if not content_div:
             raise ValueError("Could not find main content div '#mw-content-text'")
 
-        # 3. Clean Content
+        # 3. Clean Content (Aggressive Token Saving)
         for tag in content_div.find_all(
             [
                 "sup",
                 "table",
+                "style",
+                "script",
+                "nav",  # New: Remove navigation
+                "footer",  # New: Remove footers
+                "aside",  # New: Remove sidebars/infoboxes
                 ".mw-editsection",
                 ".reference",
                 ".reflist",
-                "style",
-                "script",
+                ".mw-parser-output > div",  # New: often contains metadata/infoboxes
             ]
         ):
             tag.decompose()
 
         clean_text = f"Article Title: {title}\n\n"
 
+        # Extract text from specific tags only to avoid clutter
         for element in content_div.find_all(["p", "h2", "h3", "ul", "ol"]):
+            text = element.get_text(strip=True)
+            if not text:
+                continue  # Skip empty elements
+
             if element.name == "h2":
-                clean_text += f"\n## {element.get_text(strip=True)} ##\n"
+                clean_text += f"\n## {text} ##\n"
             elif element.name == "h3":
-                clean_text += f"\n### {element.get_text(strip=True)} ###\n"
+                clean_text += f"\n### {text} ###\n"
             elif element.name in ["ul", "ol"]:
                 for li in element.find_all("li"):
-                    clean_text += f"* {li.get_text(strip=True)}\n"
+                    li_text = li.get_text(strip=True)
+                    if li_text:
+                        clean_text += f"* {li_text}\n"
             else:
-                clean_text += element.get_text(strip=True) + "\n\n"
+                clean_text += text + "\n\n"
 
-        max_chars = 15000
+        # --- TOKEN SAVER: Limit to 12,000 chars (~3,000 tokens) ---
+        max_chars = 12000
         if len(clean_text) > max_chars:
             clean_text = (
-                clean_text[:max_chars] + "\n\n... [Article truncated for brevity]"
+                clean_text[:max_chars] + "\n\n... [Truncated for AI Token Limit]"
             )
 
         return title, clean_text
