@@ -1,181 +1,227 @@
 # 🧠 AI Wiki Quiz Generator
 
-This is a production-ready Full-Stack application that accepts a Wikipedia article URL, scrapes its content, and uses Google's Gemini Pro LLM to automatically generate a structured interactive quiz.
+<p align="center">
+  <b>Turn Wikipedia into Intelligent Quizzes using AI + Hybrid RAG</b><br/>
+  Production-Ready • Scalable • System Design Focused
+</p>
 
-The system features robust backend caching, a persistent cloud database, and a resilient "Optimistic UI" that ensures instant feedback even during generation.
+---
+
+## 🚀 Badges
+
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![Frontend](https://img.shields.io/badge/frontend-React-blue.svg)
+![Backend](https://img.shields.io/badge/backend-FastAPI-green.svg)
+![Database](<https://img.shields.io/badge/database-Supabase%20(PostgreSQL)-orange.svg>)
+![AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-purple.svg)
+![RAG](<https://img.shields.io/badge/RAG-Hybrid%20(Search+LLM)-red.svg>)
+![Deployment](https://img.shields.io/badge/deploy-Vercel%20%7C%20Render-black.svg)
+![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
+
+---
+
+## 🌟 Overview
+
+A **production-grade full-stack AI system** that:
+
+- Accepts any Wikipedia URL
+- Extracts and cleans article data
+- Uses **LLM + Hybrid RAG pipeline**
+- Generates **interactive quizzes instantly**
+
+💡 Designed to demonstrate **real-world backend engineering, AI integration, and scalable architecture**
+
+---
+
+## 🧩 What Makes This “Top Repo” Level?
+
+✨ Not just a project — this is a **system design showcase**
+
+- ⚡ O(1) caching → zero-cost repeat queries
+- 🧠 Hybrid RAG → Dense + Sparse + Re-ranking
+- 🚀 Async pipelines → non-blocking UX
+- 📉 Token optimization → cost-efficient AI usage
+- 🛡️ Rate limiting + validation → production safety
+
+---
 
 ## ✨ Features
 
-### Core Functionality
+### 🔥 Core
 
-* **🔗 Universal Scraper:** Accepts any `en.wikipedia.org` URL and extracts clean, relevant text.
-* **🤖 AI Quiz Generation:** Uses **Gemini 1.5 Flash** (via LangChain) to generate:
-* Article Summary & Title
-* 5-10 Multiple Choice Questions (with difficulty levels & explanations)
-* Key Entities (People, Locations, Organizations)
-* Related Topics
+- Wikipedia URL → AI Quiz Generator
+- 5–10 MCQs with explanations
+- Summary + Key Entities + Topics
+- Persistent quiz storage
 
+---
 
-* **💾 Cloud Persistence:** Saves every generated quiz to a **Supabase (PostgreSQL)** database.
-* **📜 History Dashboard:** View a list of all past quizzes with instant "Optimistic UI" updates.
+### 🧠 AI + RAG (Highlight for Recruiters)
 
-### 🏆 Advanced Engineering & Architecture
+- Hybrid Retrieval:
+  - Dense → `MiniLM embeddings`
+  - Sparse → `BM25`
 
-#### **Scalability & Performance**
+- Re-ranking → `FlashRank (TinyBERT)`
+- Personalized learning path recommendations
 
-* **⚡ Backend Caching (O(1)):** Checks the database before calling the AI. If a URL has been processed before, it returns the cached result instantly (0 cost, 0 latency).
-* **📉 Smart Token Optimization:** The scraper intelligently strips navigation, footers, and metadata, and truncates text to ~12k characters. This reduces token usage by 40-60% per request, maximizing the free tier quota.
-* **🗄️ Database Indexing:** SQL tables are indexed on the `url` column, ensuring sub-millisecond lookups even with millions of records.
-* **🚀 Background Async Processing:** Uses FastAPI's asynchronous capabilities to handle multiple requests concurrently without blocking the server.
+---
 
-#### **Security & Stability**
+### ⚡ Performance
 
-* **🛡️ Rate Limiting:** Implements IP-based rate limiting (2 requests/hour) to prevent abuse of the free-tier Gemini API.
-* **🔒 Rigid Input Validation:** Strict Regex patterns prevent SQL Injection or malicious URLs from reaching the scraper.
-* **🌐 Strict CORS Policy:** The API is locked down to accept requests *only* from the trusted Frontend domain (Vercel).
+- O(1) cache lookup (DB-first strategy)
+- Async vector ingestion (FastAPI background tasks)
+- Indexed DB queries (sub-ms performance)
+- 40–60% token cost reduction
 
-#### **User Experience (UX)**
+---
 
-* **🎨 Interactive Quiz Mode:** A dedicated "Play Mode" where users can answer questions one by one, get real-time feedback, and see their final score.
-* **✨ Optimistic UI:** Users can switch tabs or browse history immediately after clicking "Generate," without waiting for the backend process to finish.
+### 🛡️ Production Readiness
+
+- Rate limiting (IP-based)
+- Secure input validation (Regex)
+- Strict CORS policy
+- Clean API contract
+
+---
+
+### 🎨 UX Excellence
+
+- Optimistic UI → instant feedback
+- Interactive quiz mode
+- History dashboard
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Category | Technology |
-| --- | --- |
-| **Frontend** | React (Vite), Emotion (CSS-in-JS) |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **Database** | PostgreSQL (Supabase) |
-| **ORM** | SQLAlchemy |
-| **AI / LLM** | Google Gemini 1.5 Flash (via LangChain) |
-| **Deployment** | Vercel (Frontend) + Render (Backend) |
+```txt
+Frontend   : React (Vite) + Emotion
+Backend    : FastAPI (Python)
+Database   : Supabase PostgreSQL + pgvector
+AI         : Gemini 1.5 Flash (LangChain)
+RAG        : HuggingFace + BM25 + FlashRank
+Deploy     : Vercel + Render
+```
 
 ---
 
-## 🚀 Local Setup & Installation
+## 📡 API Design
 
-### 1. Backend Setup
+| Method | Endpoint          | Description               |
+| ------ | ----------------- | ------------------------- |
+| POST   | `/generate_quiz`  | Generate + cache quiz     |
+| GET    | `/history`        | Fetch all quizzes         |
+| GET    | `/quiz/{id}`      | Fetch specific quiz       |
+| POST   | `/recommend_path` | RAG-based recommendations |
 
-1. Navigate to the `backend` directory:
+---
+
+## 🚀 Local Setup
+
+### Backend
+
 ```bash
 cd backend
-
-```
-
-
-2. Create and activate a virtual environment:
-```bash
 python -m venv venv
-# Windows: venv\Scripts\activate
-# Mac/Linux: source venv/bin/activate
+venv\Scripts\activate   # Windows
+source venv/bin/activate # Mac/Linux
 
-```
-
-
-3. Install dependencies:
-```bash
 pip install -r requirements.txt
-
 ```
 
-
-4. Create a `.env` file in `backend/`:
-```ini
-GEMINI_API_KEY="YOUR_GOOGLE_KEY"
-DATABASE_URL="postgresql://user:pass@host:6543/postgres"
-
+```env
+GEMINI_API_KEY=your_key
+DATABASE_URL=your_supabase_url
 ```
 
-
-5. Run the server:
 ```bash
 uvicorn main:app --reload
-
 ```
 
+---
 
-### 2. Frontend Setup
+### Frontend
 
-1. Navigate to `frontend`:
 ```bash
 cd frontend
-
-```
-
-
-2. Install dependencies:
-```bash
 npm install
-
-```
-
-
-3. Run the dev server:
-```bash
 npm run dev
-
 ```
 
 ---
 
-## 📡 API Endpoints
+## 🧠 System Design (Interview Ready)
 
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| `POST` | `/generate_quiz` | Scrapes URL, generates quiz via AI, saves to DB (or returns Cache). **(Rate Limited)** |
-| `GET` | `/history` | Returns a list of all generated quizzes (ID, Title, URL). |
-| `GET` | `/quiz/{id}` | Returns the full JSON quiz data for a specific ID. |
+**Flow:**
 
----
-
-## 🧠 System Prompt (LangChain)
-
-To ensure consistent JSON output while minimizing token usage, we use a Telegraphic Style system prompt. This creates a strict contract with the LLM using `JsonOutputParser`:
-
-```text
-Role: Expert Quizmaster.
-Task: Convert the provided text into a JSON object matching the strict schema.
-
-Context:
----
-{article_text}
----
-
-Requirements:
-1. Title & Summary: Extract from text.
-2. Key Entities: List people, orgs, locations.
-3. Quiz: 5-10 MCQs. 4 options each. 1 correct answer. Concise explanation. Mixed difficulty.
-4. Related Topics: 3-5 links.
-
-Schema Instructions:
-{format_instructions}
 ```
----
-
-## 🔮 Future Roadmap
-
-This project is built with a modular architecture, allowing for easy expansion. Future features include:
-
-1. **👤 User Authentication & Profiles:**
-* Integrate **Supabase Auth** (Google/GitHub Login).
-* Track individual user progress, streak counts, and "Mastery Levels" for different topics.
-
-
-2. **⚔️ Multiplayer Quiz Battle:**
-* Use **WebSockets** to allow two users to take the same generated quiz simultaneously.
-* Real-time score updates and leaderboards.
-
-
-3. **📚 Adaptive Learning Paths:**
-* Use a **Vector Database (RAG)** to recommend the *next* Wikipedia article a user should read based on their quiz performance (e.g., if they fail a "Physics" quiz, suggest "Newton's Laws").
-
+User Input URL
+   ↓
+Scraper (clean + optimize text)
+   ↓
+Cache Check (DB)
+   ↓ (miss)
+LLM Generation (Gemini)
+   ↓
+Store in DB + Vector Index
+   ↓
+Return Response (Optimistic UI)
+```
 
 ---
 
-## 📦 Deployment
+## 🔮 Future Scope
 
-* **Frontend:** Deployed on **Vercel**.
-* **Backend:** Deployed on **Render**. Configured with `CORSMiddleware` to allow requests from the Vercel domain.
-* **Database:** Hosted on **Supabase**. Connected via Transaction Pooler (Port 6543) for serverless stability.
+- 👤 Auth + User Progress Tracking
+- ⚔️ Multiplayer Quiz Battles (WebSockets)
+- 📊 Analytics Dashboard
+- 🌍 Multi-language support
+
+---
+
+## 🎯 Placement / Resume Value
+
+This project demonstrates:
+
+- ✅ Full-stack development (React + FastAPI)
+- ✅ Real-world AI integration (LLM + LangChain)
+- ✅ RAG architecture (industry-level concept)
+- ✅ Database optimization + indexing
+- ✅ System design thinking
+- ✅ Scalable backend patterns
+
+💬 **Perfect talking points in interviews:**
+
+- “I implemented a Hybrid RAG pipeline with re-ranking”
+- “I reduced token cost by 50% using preprocessing”
+- “I designed O(1) caching for AI responses”
+
+---
+
+## 📌 How to Showcase on Resume
+
+**Project Title:**
+
+> AI-Powered Wiki Quiz Generator (LLM + RAG System)
+
+**One-line:**
+
+> Built a production-ready AI system that converts Wikipedia articles into interactive quizzes using Hybrid RAG and FastAPI.
+
+---
+
+## ⭐ Support
+
+If you like this project:
+
+- ⭐ Star the repo
+- 🍴 Fork it
+- 📢 Share it
+
+---
+
+## 🧑‍💻 Author
+
+**Alapati Bhargava Rama Bharadwaja**
