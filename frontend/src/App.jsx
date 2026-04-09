@@ -93,7 +93,14 @@ const App = () => {
           date_generated: new Date().toISOString(),
         };
 
-        setHistory((prevHistory) => [newHistoryItem, ...prevHistory]);
+        setHistory(prevHistory => {
+        // If the quiz is already in the history (cache hit), don't add it again!
+        const exists = prevHistory.find(item => item.id === newQuiz.id);
+        if (exists) return prevHistory;
+        
+        // Otherwise, add it to the top
+        return [newHistoryItem, ...prevHistory];
+      });
       }
     } catch (err) {
       // --- CATCH 429 ERROR ---

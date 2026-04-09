@@ -1,12 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import database, models, scraper, llm_quiz_generator
-from database import engine, get_db, QuizHistory
-from models import GenerateQuizRequest, HistoryItem
-from fastapi import Request, HTTPException, status
 from datetime import datetime, timedelta
-from models import UserUsage
+from pydantic import BaseModel
+
+# Internal imports
+import database, scraper, llm_quiz_generator
+from database import engine, get_db, QuizHistory
+from models import GenerateQuizRequest, HistoryItem, UserUsage
+
+# --- NEW RAG IMPORTS ---
+# (Ensure you created rag_pipeline.py in the same folder)
+from rag_pipeline import add_to_knowledge_base, get_hybrid_recommendations
 
 # Create DB tables
 database.Base.metadata.create_all(bind=engine)
@@ -37,7 +42,6 @@ def check_rate_limit(request: Request, db: Session = Depends(get_db)):
 
     # 2. Check Database
     usage = db.query(UserUsage).filter(UserUsage.ip_address == client_ip).first()
-
     now = datetime.utcnow()
 
     # 3. Logic
@@ -58,10 +62,8 @@ def check_rate_limit(request: Request, db: Session = Depends(get_db)):
 
     # Check limit
     if usage.count >= MAX_REQUESTS_PER_HOUR:
-        # Calculate time remaining
         reset_time = usage.window_start + timedelta(hours=1)
         minutes_left = int((reset_time - now).total_seconds() / 60)
-
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Rate limit exceeded. You have used your {MAX_REQUESTS_PER_HOUR} free quizzes. Try again in {minutes_left} minutes.",
@@ -70,6 +72,12 @@ def check_rate_limit(request: Request, db: Session = Depends(get_db)):
     # Increment count
     usage.count += 1
     db.commit()
+
+
+# --- SCHEMAS FOR NEW ENDPOINTS ---
+class RecommendRequest(BaseModel):
+    failed_topic: str
+    summary_of_failed_topic: str
 
 
 # --- API Endpoints ---
@@ -81,7 +89,11 @@ def read_root():
 
 
 @app.post("/generate_quiz", dependencies=[Depends(check_rate_limit)])
-def generate_quiz(request: GenerateQuizRequest, db: Session = Depends(get_db)):
+def generate_quiz(
+    request: GenerateQuizRequest,
+    background_tasks: BackgroundTasks,  # <-- ADDED BACKGROUND TASKS
+    db: Session = Depends(get_db),
+):
     try:
         print(f"--- Processing URL: {request.url} ---")
 
@@ -94,13 +106,9 @@ def generate_quiz(request: GenerateQuizRequest, db: Session = Depends(get_db)):
             print(
                 f"--- [CACHE HIT] Found quiz ID: {existing_quiz.id}. Returning from DB. ---"
             )
-            # Get stored quiz data
             cached_data = existing_quiz.get_full_data().copy()
-
-            # Inject missing fields so frontend always gets them
             cached_data["id"] = existing_quiz.id
             cached_data["created_at"] = existing_quiz.date_generated.isoformat()
-
             return cached_data
 
         # --- 2. CACHE MISS → Generate fresh quiz ---
@@ -126,7 +134,17 @@ def generate_quiz(request: GenerateQuizRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_record)  # Generates the ID
 
-        # --- FIX: Inject ID + created_at into response ---
+        # --- NEW: BACKGROUND RAG INGESTION ---
+        # We add the new quiz summary to our Vector DB in the background
+        # so the user doesn't have to wait for the embedding model to run!
+        if "summary" in quiz_data:
+            background_tasks.add_task(
+                add_to_knowledge_base,
+                title=db_record.title,
+                summary=quiz_data["summary"],
+            )
+
+        # Inject ID + created_at into response
         response_payload = quiz_data.copy()
         response_payload["id"] = db_record.id
         response_payload["created_at"] = db_record.date_generated.isoformat()
@@ -158,3 +176,24 @@ def get_quiz_details(quiz_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Quiz not found")
 
     return db_record.get_full_data()
+
+
+# --- NEW ENDPOINT: ADAPTIVE LEARNING PATH (RAG) ---
+@app.post("/recommend_path")
+def recommend_path(request: RecommendRequest):
+    """
+    Takes a failed topic and uses Hybrid RAG to suggest the next topics to study.
+    """
+    try:
+        recommendations = get_hybrid_recommendations(
+            request.failed_topic, request.summary_of_failed_topic
+        )
+        return {
+            "message": "Based on your performance, we recommend studying these fundamentals first:",
+            "recommended_topics": recommendations,
+        }
+    except Exception as e:
+        print(f"Error in RAG Pipeline: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to generate recommendations."
+        )
