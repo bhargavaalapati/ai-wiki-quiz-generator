@@ -26,8 +26,23 @@ export const getQuizDetails = (id) => {
   return apiClient.get(`/quiz/${id}`);
 };
 
+//Get recommendations for a failed topic
+export const getRecommendations = async (failedTopic, summaryOfFailedTopic) => {
+  try {
+    const response = await axios.post(`${baseURL}/recommend_path`, {
+      failed_topic: failedTopic,
+      summary_of_failed_topic: summaryOfFailedTopic,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    throw error;
+  }
+};
+
 export default {
   generateQuiz,
   getHistory,
   getQuizDetails,
+  getRecommendations
 };
