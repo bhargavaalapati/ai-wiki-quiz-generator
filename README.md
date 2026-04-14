@@ -14,7 +14,7 @@
 ![Frontend](https://img.shields.io/badge/frontend-React-blue.svg)
 ![Backend](https://img.shields.io/badge/backend-FastAPI-green.svg)
 ![Database](<https://img.shields.io/badge/database-Supabase%20(PostgreSQL)-orange.svg>)
-![AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-purple.svg)
+![AI](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-purple.svg)
 ![RAG](<https://img.shields.io/badge/RAG-Hybrid%20(Search+LLM)-red.svg>)
 ![Deployment](https://img.shields.io/badge/deploy-Vercel%20%7C%20Render-black.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
