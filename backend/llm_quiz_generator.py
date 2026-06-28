@@ -46,7 +46,7 @@ def generate_quiz_data(article_text: str) -> dict:
         raise ValueError("GEMINI_API_KEY not found in .env file or environment")
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-flash-latest",
+        model="gemini-2.5-flash",
         temperature=0.7,
         google_api_key=api_key,
         max_retries=2,
